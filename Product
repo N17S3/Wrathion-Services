@@ -1,1 +1,1973 @@
+local loaded = false
 
+success, err = pcall(function()
+	while not loaded do
+		if game["loaded"] then
+
+			loaded = true
+			break
+		end
+	end
+end)
+if success then
+
+	warn(" game loaded Function executed successfully")
+
+
+
+else
+	warn("Error occurred:", err)
+
+end
+
+print("game loaded")
+local success, result = pcall(function()
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer ~= nil and game.Players.LocalPlayer.Name ~= nil and
+		game.Players.LocalPlayer:GetMouse() ~= nil
+
+	repeat
+		task.wait()
+	until game:IsLoaded()
+	game:WaitForChild("ReplicatedStorage")
+	game.ReplicatedStorage:WaitForChild("Datas")
+	game.ReplicatedStorage.Datas:WaitForChild(game.Players.LocalPlayer.UserId)
+end)
+if success then
+
+
+
+	warn(" game loaded Function executed successfully")
+
+
+else
+	warn("Error occurred:", err)
+
+end
+
+task.wait()
+
+
+local stackneeded = true
+local targetted;
+local transformStatus = false
+local autoFarmLoopRunning = false
+local stacked = false
+local flying = false
+
+local charge = false
+local checkValue;
+
+getgenv().dead = false
+getgenv().rebirthed = false
+
+function format_number(number)
+	local suffixes = {"", "K", "M", "B", "T", "QD"}
+	local suffix_index = 1
+
+	while math.abs(number) >= 1000 and suffix_index < #suffixes do
+		number = number / 1000.0
+		suffix_index = suffix_index + 1
+	end
+
+	return string.format("%.2f%s", number, suffixes[suffix_index])
+end
+
+if getgenv().AutoRebirth ~= true then
+	getgenv().AutoRebirth = false
+end
+
+local function notify(Text,Time)
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "Script",
+		Text = Text,
+		Icon = nil,
+		Duration = Time,
+	})
+end
+
+function getCheckValue()
+	data = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId]
+	local a = data.Strength.Value
+	local b = data.Energy.Value
+	local c = data.Defense.Value
+	local d = data.Speed.Value
+
+	local smallest = a 
+
+	if b < smallest then
+		smallest = b
+	end
+
+	if c < smallest then
+		smallest = c
+	end
+
+	if d < smallest then
+		smallest = d
+	end
+
+	checkValue = smallest
+	return checkValue
+end
+local PaidFormsList = {
+	Evil = {{
+		name = "SSJ2 Kaioken",
+		reqvalue = 50000,
+		endrangevalue = 160000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "LSSJ Kaioken",
+		reqvalue = 160001,
+		endrangevalue = 250000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "Mystic Kaioken",
+		reqvalue = 250001,
+		endrangevalue = 550000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "SSJ5",
+		reqvalue = 550001,
+		endrangevalue = 800000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950469
+	}, {
+		name = "LSSJ3",
+		reqvalue = 800001,
+		endrangevalue = 1000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "SSJG4",
+		reqvalue = 1000001,
+		endrangevalue = 1800000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = true,
+		GamePassID = 6950465
+	}, {
+		name = "LSSJ4",
+		reqvalue = 1800001,
+		endrangevalue = 3000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "LSSJG",
+		reqvalue = 3000001,
+		endrangevalue = 4000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "Super Broly",
+		reqvalue = 4000000,
+		endrangevalue = 30000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 7837022
+	}, {
+		name = "True God of Destruction",
+		reqvalue = 30000001,
+		endrangevalue = 50000000,
+		alignment = "Evil",
+		rebirthReq = 10,
+		formOwned = false,
+		GamePassID = 9848987
+	}, {
+		name = "SSJB4",
+		reqvalue = 50000001,
+		endrangevalue = 120000000,
+		alignment = "Neutral",
+		rebirthReq = 13,
+		formOwned = true,
+		GamePassID = 6950465
+	}, {
+		name = "Blanco",
+		reqvalue = 120000001,
+		endrangevalue = 120000000986636346000000000,
+		alignment = "Neutral",
+		rebirthReq = 24,
+		formOwned = false,
+		GamePassID = 676684901
+	}},
+
+	Good = {{
+		name = "SSJ2 Kaioken",
+		reqvalue = 50000,
+		endrangevalue = 160000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "LSSJ Kaioken",
+		reqvalue = 160001,
+		endrangevalue = 250000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "Mystic Kaioken",
+		reqvalue = 250001,
+		endrangevalue = 550000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950449
+	}, {
+		name = "SSJ5",
+		reqvalue = 550001,
+		endrangevalue = 800000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950469
+	}, {
+		name = "LSSJ3",
+		reqvalue = 800001,
+		endrangevalue = 1000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "SSJG4",
+		reqvalue = 1000001,
+		endrangevalue = 1800000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6950465
+	}, {
+		name = "LSSJ4",
+		reqvalue = 1800001,
+		endrangevalue = 3000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "LSSJG",
+		reqvalue = 3000001,
+		endrangevalue = 4000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 6951002
+	}, {
+		name = "Super Broly",
+		reqvalue = 4000000,
+		endrangevalue = 30000000,
+		alignment = "Neutral",
+		rebirthReq = 0,
+		formOwned = false,
+		GamePassID = 7837022
+	}, {
+		name = "SSJB4",
+		reqvalue = 50000001,
+		endrangevalue = 120000001,
+		alignment = "Neutral",
+		rebirthReq = 13,
+		formOwned = false,
+		GamePassID = 6950465
+	}, {
+		name = "Blanco",
+		reqvalue = 120000000,
+		endrangevalue = 120000000986636346000000000,
+		alignment = "Neutral",
+		rebirthReq = 24,
+		formOwned = false,
+		GamePassID = 676684901
+	}}
+}
+
+local FormsList = {
+
+	Evil = {{
+		name = "Kaioken",
+		reqvalue = 1000,
+		endrangevalue = 2500,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "FSSJ",
+		reqvalue = 2501,
+		endrangevalue = 6000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ",
+		reqvalue = 6001,
+		endrangevalue = 16000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Kaioken",
+		reqvalue = 16001,
+		endrangevalue = 34000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ2",
+		reqvalue = 34001,
+		endrangevalue = 65000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ2 Majin",
+		reqvalue = 65001,
+		endrangevalue = 95000,
+		alignment = "Evil",
+		rebirthReq = 0
+	}, {
+		name = "SSJ3",
+		reqvalue = 95001,
+		endrangevalue = 140000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "LSSJ",
+		reqvalue = 140001,
+		endrangevalue = 200000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "Mystic",
+		reqvalue = 200001,
+		endrangevalue = 300000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ4",
+		reqvalue = 300001,
+		endrangevalue = 450000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJG",
+		reqvalue = 450001,
+		endrangevalue = 700000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "Corrupt SSJ",
+		reqvalue = 700001,
+		endrangevalue = 1400000,
+		alignment = "Evil",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Rose",
+		reqvalue = 1400001,
+		endrangevalue = 2400000,
+		alignment = "Evil",
+		rebirthReq = 0
+	}, {
+		name = "True Rose",
+		reqvalue = 2400001,
+		endrangevalue = 3000000,
+		alignment = "Evil",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Berserker",
+		reqvalue = 3000001,
+		endrangevalue = 3500000,
+		alignment = "Evil",
+		rebirthReq = 1
+	}, {
+		name = "Dark Rose",
+		reqvalue = 3500001,
+		endrangevalue = 4000000,
+		alignment = "Evil",
+		rebirthReq = 2
+	}, {
+		name = "Evil SSJ",
+		reqvalue = 4000001,
+		endrangevalue = 5000000,
+		alignment = "Evil",
+		rebirthReq = 3
+	}, {
+		name = "Ultra Instinct Omen",
+		reqvalue = 5000001,
+		endrangevalue = 8000000,
+		alignment = "Neutral",
+		rebirthReq = 3
+	}, {
+		name = "Godly SSJ2",
+		reqvalue = 8000001,
+		endrangevalue = 14000000,
+		alignment = "Neutral",
+		rebirthReq = 4
+	}, {
+		name = "Jiren Ultra Instinct",
+		reqvalue = 14000001,
+		endrangevalue = 30000000,
+		alignment = "Evil",
+		rebirthReq = 6
+	}, {
+		name = "God of Destruction",
+		reqvalue = 30000001,
+		endrangevalue = 50000000,
+		alignment = "Evil",
+		rebirthReq = 10
+	}, {
+		name = "SSJR3",
+		reqvalue = 50000001,
+		endrangevalue = 100000000,
+		alignment = "Evil",
+		rebirthReq = 12
+	}, {
+		name = "LBSSJ4",
+		reqvalue = 100000001,
+		endrangevalue = 120000000,
+		alignment = "Good",
+		rebirthReq = 18
+	}, {
+		name = "Ultra Ego",
+		reqvalue = 120000001,
+		endrangevalue = 120000002,
+		alignment = "Evil",
+		rebirthReq = 20
+	},
+	{
+		name = "Beast",
+		reqvalue = 120000003,
+		endrangevalue = 100000000000000000000000,
+		alignment = "Evil",
+		rebirthReq = 24
+	}}, -- close evil
+
+	Good = {{
+		name = "Kaioken",
+		reqvalue = 1000,
+		endrangevalue = 2500,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "FSSJ",
+		reqvalue = 2501,
+		endrangevalue = 6000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ",
+		reqvalue = 6001,
+		endrangevalue = 16000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Kaioken",
+		reqvalue = 16001,
+		endrangevalue = 34000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ2",
+		reqvalue = 34001,
+		endrangevalue = 65000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "Spirit SSJ",
+		reqvalue = 65001,
+		endrangevalue = 95000,
+		alignment = "Good",
+		rebirthReq = 0
+	}, {
+		name = "SSJ3",
+		reqvalue = 95001,
+		endrangevalue = 140000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "LSSJ",
+		reqvalue = 140001,
+		endrangevalue = 200000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "Mystic",
+		reqvalue = 200001,
+		endrangevalue = 300000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ4",
+		reqvalue = 300001,
+		endrangevalue = 450000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJG",
+		reqvalue = 450001,
+		endrangevalue = 700000,
+		alignment = "Neutral",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Rage",
+		reqvalue = 700001,
+		endrangevalue = 1200000,
+		alignment = "Good",
+		rebirthReq = 0
+	}, {
+		name = "SSJ Blue",
+		reqvalue = 1200001,
+		endrangevalue = 2200000,
+		alignment = "Good",
+		rebirthReq = 0
+	}, {
+		name = "SSJB Kaioken",
+		reqvalue = 2200001,
+		endrangevalue = 3000000,
+		alignment = "Good",
+		rebirthReq = 0
+	}, {
+		name = "Kefla SSJ2",
+		reqvalue = 3000001,
+		endrangevalue = 3500000,
+		alignment = "Good",
+		rebirthReq = 1
+	}, {
+		name = "Blue Evolution",
+		reqvalue = 3500001,
+		endrangevalue = 5000000,
+		alignment = "Good",
+		rebirthReq = 2
+	}, {
+		name = "Ultra Instinct Omen",
+		reqvalue = 5000001,
+		endrangevalue = 8000000,
+		alignment = "Neutral",
+		rebirthReq = 3
+	}, {
+		name = "Godly SSJ2",
+		reqvalue = 8000001,
+		endrangevalue = 14000000,
+		alignment = "Neutral",
+		rebirthReq = 4
+	}, {
+		name = "Mastered Ultra Instinct",
+		reqvalue = 14000001,
+		endrangevalue = 30000000,
+		alignment = "Good",
+		rebirthReq = 6
+	}, {
+		name = "God of Creation",
+		reqvalue = 30000001,
+		endrangevalue = 50000000,
+		alignment = "Good",
+		rebirthReq = 10
+	}, {
+		name = "SSJB3",
+		reqvalue = 50000001,
+		endrangevalue = 100000000,
+		alignment = "Good",
+		rebirthReq = 12
+	}, {
+		name = "LBSSJ4",
+		reqvalue = 100000001,
+		endrangevalue = 120000001,
+		alignment = "Good",
+		rebirthReq = 18
+	}, {
+		name = "SSJBUI",
+		reqvalue = 120000001,
+		endrangevalue = 120000002,
+		alignment = "Good",
+		rebirthReq = 20
+	},
+	{
+		name = "Beast",
+		reqvalue = 120000003,
+		endrangevalue = 100000000000000000000000,
+		alignment = "Good",
+		rebirthReq = 24
+	}}
+}
+
+local quests = {{
+	name = "X Fighter Trainer",
+	nickname = "X Fighter",
+	requiredValue = 0,
+	endRange = 30000,
+	planet = "Earth"
+}, {
+	name = "Klirin",
+	nickname = "Klirin",
+	requiredValue = 30001,
+	endRange = 60000,
+	planet = "Earth"
+}, {
+	name = "Kid Nohag",
+	nickname = "Kid Nohag",
+	requiredValue = 60001,
+	endRange = 80000,
+	planet = "Earth"
+}, {
+	name = "Turtle Student",
+	nickname = "Turtle Student",
+	requiredValue = 80001,
+	endRange = 100000,
+	planet = "Earth"
+}, {
+	name = "Radish",
+	nickname = "Radish",
+	requiredValue = 100001,
+	endRange = 200000,
+	planet = "Earth"
+}, {
+	name = "Mapa",
+	nickname = "Mapa",
+	requiredValue = 200001,
+	endRange = 300000,
+	planet = "Earth"
+}, {
+	name = "Citizen",
+	nickname = "Evil Saya",
+	requiredValue = 300001,
+	endRange = 400000,
+	planet = "Earth"
+}, {
+	name = "Top X Fighter",
+	nickname = "X Fighter Master",
+	requiredValue = 400001,
+	endRange = 750000,
+	planet = "Earth"
+}, {
+	name = "Super Vegetable",
+	nickname = "Super Vegetable",
+	requiredValue = 750001,
+	endRange = 1000000,
+	planet = "Earth"
+}, {
+	name = "Chilly",
+	nickname = "Chilly",
+	requiredValue = 100001,
+	endRange = 1000000,
+	planet = "Earth"
+}, {
+	name = "Perfect Atom",
+	nickname = "Perfect Atom",
+	requiredValue = 1000001,
+	endRange = 9100000,
+	planet = "Earth"
+}, {
+	name = "SSJ2 Wukong",
+	nickname = "SSJ2 Wukong",
+	requiredValue = 9100001,
+	endRange = 10000000,
+	planet = "Earth"
+}, {
+	name = "SSJB Wukong",
+	nickname = "SSJB Wukong",
+	requiredValue = 10000001,
+	endRange = 30500000,
+	planet = "Earth"
+}, {
+	name = "Broccoli",
+	nickname = "Broccoli",
+	requiredValue = 30500001,
+	endRange = 100000000,
+	planet = "Earth"
+}, {
+	name = "SSJG Kakata",
+	nickname = "SSJG Kakata",
+	requiredValue = 100000000,
+	endRange = 200000000,
+	planet = "Earth"
+}, {
+	name = "Vegetable (GoD in-training)",
+	nickname = "Vegetable (GoD in-training)",
+	requiredValue = 200000001,
+	endRange = 210000000,
+	planet = "Bills"
+}, {
+	name = "Wukong (Omen)",
+	nickname = "Wukong (Omen)",
+	requiredValue = 210000001,
+	endRange = 600000000,
+	planet = "Bills"
+}, {
+	name = "Vills (50%)",
+	nickname = "Vills (50%)",
+	requiredValue = 600000001,
+	endRange = 250000000,
+	planet = "Bills"
+}, {
+	name = "Vis (20%)",
+	nickname = "Vis (20%)",
+	requiredValue = 250000001,
+	endRange = 1100000000,
+	planet = "Bills"
+}, {
+	name = "Vegetable (LBSSJ4)",
+	nickname = "Vegetable (LBSSJ4)",
+	requiredValue = 1100000001,
+	endRange = 2000000000,
+	planet = "Bills"
+}, {
+	name = "Wukong (LBSSJ4)",
+	nickname = "Wukong (LBSSJ4)",
+	requiredValue = 2000000001,
+	endRange = 3000000000,
+	planet = "Bills"
+}, {
+	name = "Vekuta (LBSSJ4)",
+	nickname = "Vekuta (LBSSJ4)",
+	requiredValue = 3000000001,
+	endRange = 5500000000,
+	planet = "Bills"
+}, {
+	name = "Wukong Rose",
+	nickname = "Wukong Rose",
+	requiredValue = 5500000001,
+	endRange = 6000000000,
+	planet = "Bills"
+}, {
+	name = "Vekuta (SSJBUI)",
+	nickname = "Vekuta (SSJBUI)",
+	requiredValue = 6000000001,
+	endRange = 2000000000000000000,
+	planet = "Bills"
+}}
+
+notify("Credits to Orbital and his chatgpt, Fixes by Zack.", 100)
+
+local function check1()
+	pcall(function()
+		local checkValue = getCheckValue()
+
+		if checkValue >= 200000000 and game.placeId ~= 5151400895 then
+			data = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId]
+			if data.Zeni.Value >= 15000 then
+
+				local A_1 = "Vills Planet"
+				local Event = game:GetService("ReplicatedStorage").Package.Events.TP
+				Event:InvokeServer(A_1)
+				tp = true
+				return tp
+			else
+				SelectedQuests = "SSJG Kakata"
+				SelectedMobs1 = "SSJG Kakata"
+
+				tp = false
+				return SelectedQuests, SelectedMobs, tp
+
+			end
+		end
+
+		if checkValue <= 125000000 and game.placeId == 5151400895 then
+
+			if checkValue < 200000000 and game.placeId ~= 3311165597 then
+				local A_1 = "Earth"
+				local Event = game:GetService("ReplicatedStorage").Package.Events.TP
+				Event:InvokeServer(A_1)
+				task.wait(8)
+			end
+		end
+	end)
+end
+
+function target()
+	targetted = game.Players.LocalPlayer.name
+
+end
+pcall(function() target() end)
+local function deadcheck(LDCheck)
+	success, err = pcall(function()
+		task.wait()
+		if game.Players.LocalPlayer.Character.Humanoid.Health <= 0 then
+			getgenv().dead = true
+			transformStatus = false
+			autoFarmLoopRunning = false
+			flying = false
+			questneeded = true
+
+
+		else
+			autoFarmLoopRunning = true
+			getgenv().dead = false
+
+		end
+	end)
+	if LDCheck then
+		getgenv().stackneeded = false
+		autoFarmLoopRunning = true
+		print("last dead check passed")
+	end
+	if success then
+		warn("Stack loop Function executed successfully with a value of " .. tostring(getgenv().dead))
+
+
+	else
+		warn("Error occurred:", err)
+
+	end
+	return autoFarmLoopRunning, transformStatus, flying
+end
+
+function startgame()
+	pcall(function()
+
+		repeat
+
+			if game.workspace[targetted] then
+				task.wait()
+				local Event = game:GetService("ReplicatedStorage").Package.Events.Start
+				Event:InvokeServer()
+				task.wait()
+
+				local Event = game:GetService("ReplicatedStorage").Package.Events.Start
+				Event:InvokeServer()
+
+				task.wait()
+
+				game.Players.LocalPlayer.PlayerGui.Main.bruh.Disabled = true
+
+				game.Players.LocalPlayer.PlayerGui.Main.bruh.Disabled = false
+
+				task.wait()
+				local Event = game:GetService("ReplicatedStorage").Package.Events.Start
+				Event:InvokeServer()
+
+			end
+		until game.workspace.Living[targetted]
+
+	end)
+
+end
+repeat
+	success, err = pcall(function() 
+		local function CheckGamePass(UserId, GamePassID)
+			local MarketplaceService = game:GetService("MarketplaceService")
+			return MarketplaceService:UserOwnsGamePassAsync(UserId, GamePassID)
+		end
+
+		local userId = game.Players.LocalPlayer.UserId 
+
+		for _, form in ipairs(PaidFormsList["Evil"]) do
+
+			form.formOwned = CheckGamePass(userId, form.GamePassID)
+
+		end
+
+		for _, form in ipairs(PaidFormsList["Good"]) do
+			form.formOwned = CheckGamePass(userId, form.GamePassID)
+		end
+
+		for _, form in ipairs(PaidFormsList["Good"]) do
+
+			print(string.format("Name: %s, ReqValue: %d, EndRangeValue: %d, Alignment: %s, RebirthReq: %d, FormOwned: %s",
+				form.name, form.reqvalue, form.endrangevalue, form.alignment, form.rebirthReq, tostring(form.formOwned)))
+
+		end
+	end)
+	task.wait()
+until success
+
+local function autostack(stack1)
+	pcall(function()
+		targetted = game.Players.LocalPlayer.name
+		data = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId]
+		if stack1 == true and data.Energy.Value > 8000000 and getgenv().dead == false then
+			task.wait(1)
+
+			game.workspace.Living[targetted].UpperTorso:Destroy()
+			task.wait(5)
+			local Remote = game.ReplicatedStorage.Package.Events['equipskill']
+			local Arguments = {
+				[1] = "Godly SSJ2"
+			}
+			Remote:InvokeServer(unpack(Arguments))
+			local Remote = game.ReplicatedStorage.Package.Events['ta']
+			i = 0
+			repeat
+				Remote:InvokeServer(unpack(Arguments))
+				i = i + 1
+				task.wait(.1)
+			until i == 8
+			task.wait()
+			getgenv().stackneeded = false
+			transformStatus = true
+			autoFarmLoopRunning = true
+			flying = false
+			return transformStatus, autoFarmLoopRunning, flying
+		elseif stack1 == false then
+			getgenv().stackneeded = false
+			transformStatus = true
+			autoFarmLoopRunning = true
+			flying = false
+			return  transformStatus, autoFarmLoopRunning, flying
+		elseif stack1 == true and data.Energy.Value < 8000000 then
+			task.wait()
+			getgenv().stackneeded = false
+			transformStatus = true
+			autoFarmLoopRunning = true
+			flying = false
+			return  transformStatus, autoFarmLoopRunning, flying
+		end
+	end)
+end
+
+pcall(function()
+	task.wait()
+	check1()
+
+	repeat
+
+		startgame()
+
+	until game.workspace.Living[targetted]
+
+end)
+task.spawn(function()
+	pcall(function()
+		local bb = game:service 'VirtualUser'
+		game:service 'Players'.LocalPlayer.Idled:connect(function()
+			bb:CaptureController()
+			bb:ClickButton2(Vector2.new())
+			task.wait(2)
+		end)
+	end)
+end)
+-- Added extra antiafk + by Zack
+local plr = game:GetService("Players").LocalPlayer
+spawn(function()
+	local vu = game:GetService("VirtualUser")
+	plr.Idled:connect(function()
+		vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+		wait(1)
+		vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+	end)
+end)
+
+sameplanet = true
+SelectedQuests = ""
+SelectedMobs = ""
+local planet1 = ""
+
+local function getQuest(switch1)
+	switch1 = getgenv().switch1
+
+	local checkValue = getCheckValue()
+
+	local previousQuestName -- Variable to keep track of the previous quest's name for switch == 1
+
+	for i, quest in ipairs(quests) do
+		if checkValue >= quest.requiredValue and checkValue <= quest.endRange then
+			currentQuestIndex = i
+
+			if switch1 == 1 then
+
+				SelectedQuests = quest.name
+				SelectedMobs = quest.nickname
+				planet1 = quest.planet
+
+				return SelectedQuests, SelectedMobs, planet1 -- exit the loop if a quest is found
+			elseif switch1 == 2 then
+				if currentQuestIndex >= 2 then
+
+					for j = i - 1, 1, -1 do -- search for the previous quest
+						local prevQuest = quests[j]
+
+						if planet1 == prevQuest.planet then
+
+							SelectedQuests = prevQuest.name
+							SelectedMobs = prevQuest.nickname
+							sameplanet = true
+
+							return SelectedQuests, SelectedMobs, sameplanet -- exit the loop once the previous quest is found
+						else
+							sameplanet = false
+
+							SelectedQuests = quest.name
+							SelectedMobs = quest.nickname
+							return SelectedQuests, SelectedMobs, switch1, sameplanet
+						end
+					end
+
+				elseif currentQuestIndex <= 1 then
+					SelectedQuests = quest.name
+					SelectedMobs = quest.nickname
+
+					return SelectedQuests, SelectedMobs, switch1
+				end
+				break -- exit the loop if a quest is found (could also remove this line if the loop should continue searching for quests)
+			end
+
+		end
+	end
+
+end
+questneeded = false
+-- Function
+local attacks2 = {"Super Dragon Fist", "God Slicer", "Spirit Barrage", "Mach Kick", "Wolf Fang Fist", "High Power Rush",
+	"Meteor Strike", "Meteor Charge"}
+
+-- Function
+local attacks = { "Vital Strike", "Uppercut",
+	"Spirit Breaking Cannon", "Vanish Strike"
+}
+
+local RebValue = ""
+
+local rebirthOnJoin = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId].Rebirth.Value
+
+
+-- Auto Rebirth + added by zack
+spawn(function()
+	if getgenv().AutoRebirth == true then
+		while getgenv().AutoRebirth == true do
+			if not getgenv().AutoRebirth then
+				break
+			end
+			game:GetService("ReplicatedStorage").Package.Events.reb:InvokeServer()
+			task.wait()
+		end
+	end
+end)
+
+-- Auto Block Fixed + by Zack
+spawn(function()
+	getgenv().AutoBlock = true
+
+	while getgenv().AutoBlock do
+		if not getgenv().AutoBlock then                                                 
+			game:GetService("ReplicatedStorage").Package.Events.block:InvokeServer(true) 
+			task.wait()                                                                  
+			break                                                                        
+		end
+
+		if not game:GetService("Players").LocalPlayer.Status.Blocking.Value then         
+			game:GetService("ReplicatedStorage").Package.Events.block:InvokeServer(true) 
+		end
+
+		task.wait()
+	end
+end)
+
+-- Replaced old antilag with v1
+spawn(function()
+	while task.wait() do
+		if plr.Character:FindFirstChild("Effects") then
+			plr.Character:FindFirstChild("Effects"):Destroy()
+		end
+	end
+end)
+
+-- added antilag v2
+spawn(function()
+	_G.SendNotifications = false
+	_G.Settings = {
+		Players = {
+			["Ignore Me"] = true, -- Ignore your Character
+			["Ignore Others"] = true -- Ignore other Characters
+		},
+		Meshes = {
+			Destroy = false, -- Destroy Meshes
+			LowDetail = true -- Low detail meshes (NOT SURE IT DOES ANYTHING)
+		},
+		Images = {
+			Invisible = true, -- Invisible Images
+			LowDetail = false, -- Low detail images (NOT SURE IT DOES ANYTHING)
+			Destroy = false, -- Destroy Images
+		},
+		Other = {
+			["No Particles"] = true, -- Disables all ParticleEmitter, Trail, Smoke, Fire and Sparkles
+			["No Camera Effects"] = true, -- Disables all PostEffect's (Camera/Lighting Effects)
+			["No Explosions"] = true, -- Makes Explosion's invisible
+			["No Clothes"] = true, -- Removes Clothing from the game
+			["Low Water Graphics"] = true, -- Removes Water Quality
+			["No Shadows"] = true, -- Remove Shadows
+			["Low Rendering"] = true, -- Lower Rendering
+			["Low Quality Parts"] = true -- Lower quality parts
+		}
+	}
+	-- MADE BY RIP#6666
+	-- send issues or suggestions to my discord: discord.gg/rips
+
+	if not _G.Ignore then
+		_G.Ignore = {} -- Add Instances to this table to ignore them (e.g. _G.Ignore = {workspace.Map, workspace.Map2})
+	end
+	if not _G.WaitPerAmount then
+		_G.WaitPerAmount = 500 -- Set Higher or Lower depending on your computer's performance
+	end
+	if _G.SendNotifications == nil then
+		_G.SendNotifications = true -- Set to false if you don't want notifications
+	end
+	if _G.ConsoleLogs == nil then
+		_G.ConsoleLogs = false -- Set to true if you want console logs (mainly for debugging)
+	end
+
+
+
+	if not game:IsLoaded() then
+		repeat
+			task.wait()
+		until game:IsLoaded()
+	end
+	if not _G.Settings then
+		_G.Settings = {
+			Players = {
+				["Ignore Me"] = true,
+				["Ignore Others"] = true,
+				["Ignore Tools"] = true
+			},
+			Meshes = {
+				NoMesh = false,
+				NoTexture = false,
+				Destroy = false
+			},
+			Images = {
+				Invisible = true,
+				Destroy = false
+			},
+			Explosions = {
+				Smaller = true,
+				Invisible = false, -- Not recommended for PVP games
+				Destroy = false -- Not recommended for PVP games
+			},
+			Particles = {
+				Invisible = true,
+				Destroy = false
+			},
+			TextLabels = {
+				LowerQuality = false,
+				Invisible = false,
+				Destroy = false
+			},
+			MeshParts = {
+				LowerQuality = true,
+				Invisible = false,
+				NoTexture = false,
+				NoMesh = false,
+				Destroy = false
+			},
+			Other = {
+				["FPS Cap"] = 240, -- Set this true to uncap FPS
+				["No Camera Effects"] = true,
+				["No Clothes"] = true,
+				["Low Water Graphics"] = true,
+				["No Shadows"] = true,
+				["Low Rendering"] = true,
+				["Low Quality Parts"] = true,
+				["Low Quality Models"] = true,
+				["Reset Materials"] = true,
+				["Lower Quality MeshParts"] = true
+			}
+		}
+	end
+	local Players, Lighting, StarterGui, MaterialService = game:GetService("Players"), game:GetService("Lighting"), game:GetService("StarterGui"), game:GetService("MaterialService")
+	local ME, CanBeEnabled = Players.LocalPlayer, {"ParticleEmitter", "Trail", "Smoke", "Fire", "Sparkles"}
+	local function PartOfCharacter(Instance)
+		for i, v in pairs(Players:GetPlayers()) do
+			if v ~= ME and v.Character and Instance:IsDescendantOf(v.Character) then
+				return true
+			end
+		end
+		return false
+	end
+	local function DescendantOfIgnore(Instance)
+		for i, v in pairs(_G.Ignore) do
+			if Instance:IsDescendantOf(v) then
+				return true
+			end
+		end
+		return false
+	end
+	local function CheckIfBad(Instance)
+		if not Instance:IsDescendantOf(Players) and (_G.Settings.Players["Ignore Others"] and not PartOfCharacter(Instance) or not _G.Settings.Players["Ignore Others"]) and (_G.Settings.Players["Ignore Me"] and ME.Character and not Instance:IsDescendantOf(ME.Character) or not _G.Settings.Players["Ignore Me"]) and (_G.Settings.Players["Ignore Tools"] and not Instance:IsA("BackpackItem") and not Instance:FindFirstAncestorWhichIsA("BackpackItem") or not _G.Settings.Players["Ignore Tools"])--[[not PartOfCharacter(Instance)]] and (_G.Ignore and not table.find(_G.Ignore, Instance) and not DescendantOfIgnore(Instance) or (not _G.Ignore or type(_G.Ignore) ~= "table" or #_G.Ignore <= 0)) then
+			if Instance:IsA("DataModelMesh") then
+				if _G.Settings.Meshes.NoMesh and Instance:IsA("SpecialMesh") then
+					Instance.MeshId = ""
+				end
+				if _G.Settings.Meshes.NoTexture and Instance:IsA("SpecialMesh") then
+					Instance.TextureId = ""
+				end
+				if _G.Settings.Meshes.Destroy or _G.Settings["No Meshes"] then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("FaceInstance") then
+				if _G.Settings.Images.Invisible then
+					Instance.Transparency = 1
+					Instance.Shiny = 1
+				end
+				if _G.Settings.Images.LowDetail then
+					Instance.Shiny = 1
+				end
+				if _G.Settings.Images.Destroy then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("ShirtGraphic") then
+				if _G.Settings.Images.Invisible then
+					Instance.Graphic = ""
+				end
+				if _G.Settings.Images.Destroy then
+					Instance:Destroy()
+				end
+			elseif table.find(CanBeEnabled, Instance.ClassName) then
+				if _G.Settings["Invisible Particles"] or _G.Settings["No Particles"] or (_G.Settings.Other and _G.Settings.Other["Invisible Particles"]) or (_G.Settings.Particles and _G.Settings.Particles.Invisible) then
+					Instance.Enabled = false
+				end
+				if (_G.Settings.Other and _G.Settings.Other["No Particles"]) or (_G.Settings.Particles and _G.Settings.Particles.Destroy) then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("PostEffect") and (_G.Settings["No Camera Effects"] or (_G.Settings.Other and _G.Settings.Other["No Camera Effects"])) then
+				Instance.Enabled = false
+			elseif Instance:IsA("Explosion") then
+				if _G.Settings["Smaller Explosions"] or (_G.Settings.Other and _G.Settings.Other["Smaller Explosions"]) or (_G.Settings.Explosions and _G.Settings.Explosions.Smaller) then
+					Instance.BlastPressure = 1
+					Instance.BlastRadius = 1
+				end
+				if _G.Settings["Invisible Explosions"] or (_G.Settings.Other and _G.Settings.Other["Invisible Explosions"]) or (_G.Settings.Explosions and _G.Settings.Explosions.Invisible) then
+					Instance.BlastPressure = 1
+					Instance.BlastRadius = 1
+					Instance.Visible = false
+				end
+				if _G.Settings["No Explosions"] or (_G.Settings.Other and _G.Settings.Other["No Explosions"]) or (_G.Settings.Explosions and _G.Settings.Explosions.Destroy) then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("Clothing") or Instance:IsA("SurfaceAppearance") or Instance:IsA("BaseWrap") then
+				if _G.Settings["No Clothes"] or (_G.Settings.Other and _G.Settings.Other["No Clothes"]) then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("BasePart") and not Instance:IsA("MeshPart") then
+				if _G.Settings["Low Quality Parts"] or (_G.Settings.Other and _G.Settings.Other["Low Quality Parts"]) then
+					Instance.Material = Enum.Material.Plastic
+					Instance.Reflectance = 0
+				end
+			elseif Instance:IsA("TextLabel") and Instance:IsDescendantOf(workspace) then
+				if _G.Settings["Lower Quality TextLabels"] or (_G.Settings.Other and _G.Settings.Other["Lower Quality TextLabels"]) or (_G.Settings.TextLabels and _G.Settings.TextLabels.LowerQuality) then
+					Instance.Font = Enum.Font.SourceSans
+					Instance.TextScaled = false
+					Instance.RichText = false
+					Instance.TextSize = 14
+				end
+				if _G.Settings["Invisible TextLabels"] or (_G.Settings.Other and _G.Settings.Other["Invisible TextLabels"]) or (_G.Settings.TextLabels and _G.Settings.TextLabels.Invisible) then
+					Instance.Visible = false
+				end
+				if _G.Settings["No TextLabels"] or (_G.Settings.Other and _G.Settings.Other["No TextLabels"]) or (_G.Settings.TextLabels and _G.Settings.TextLabels.Destroy) then
+					Instance:Destroy()
+				end
+			elseif Instance:IsA("Model") then
+				if _G.Settings["Low Quality Models"] or (_G.Settings.Other and _G.Settings.Other["Low Quality Models"]) then
+					Instance.LevelOfDetail = 1
+				end
+			elseif Instance:IsA("MeshPart") then
+				if _G.Settings["Low Quality MeshParts"] or (_G.Settings.Other and _G.Settings.Other["Low Quality MeshParts"]) or (_G.Settings.MeshParts and _G.Settings.MeshParts.LowerQuality) then
+					Instance.RenderFidelity = 2
+					Instance.Reflectance = 0
+					Instance.Material = Enum.Material.Plastic
+				end
+				if _G.Settings["Invisible MeshParts"] or (_G.Settings.Other and _G.Settings.Other["Invisible MeshParts"]) or (_G.Settings.MeshParts and _G.Settings.MeshParts.Invisible) then
+					Instance.Transparency = 1
+					Instance.RenderFidelity = 2
+					Instance.Reflectance = 0
+					Instance.Material = Enum.Material.Plastic
+				end
+				if _G.Settings.MeshParts and _G.Settings.MeshParts.NoTexture then
+					Instance.TextureID = ""
+				end
+				if _G.Settings.MeshParts and _G.Settings.MeshParts.NoMesh then
+					Instance.MeshId = ""
+				end
+				if _G.Settings["No MeshParts"] or (_G.Settings.Other and _G.Settings.Other["No MeshParts"]) or (_G.Settings.MeshParts and _G.Settings.MeshParts.Destroy) then
+					Instance:Destroy()
+				end
+			end
+		end
+	end
+	if _G.SendNotifications then
+		StarterGui:SetCore("SendNotification", {
+			Title = "discord.gg/rips",
+			Text = "Loading FPS Booster...",
+			Duration = math.huge,
+			Button1 = "Okay"
+		})
+	end
+	coroutine.wrap(pcall)(function()
+		if (_G.Settings["Low Water Graphics"] or (_G.Settings.Other and _G.Settings.Other["Low Water Graphics"])) then
+			if not workspace:FindFirstChildOfClass("Terrain") then
+				repeat
+					task.wait()
+				until workspace:FindFirstChildOfClass("Terrain")
+			end
+			workspace:FindFirstChildOfClass("Terrain").WaterWaveSize = 0
+			workspace:FindFirstChildOfClass("Terrain").WaterWaveSpeed = 0
+			workspace:FindFirstChildOfClass("Terrain").WaterReflectance = 0
+			workspace:FindFirstChildOfClass("Terrain").WaterTransparency = 0
+			if sethiddenproperty then
+				sethiddenproperty(workspace:FindFirstChildOfClass("Terrain"), "Decoration", false)
+			else
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "Your exploit does not support sethiddenproperty, please use a different exploit.",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+				warn("Your exploit does not support sethiddenproperty, please use a different exploit.")
+			end
+			if _G.SendNotifications then
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "Low Water Graphics Enabled",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+			end
+			if _G.ConsoleLogs then
+				warn("Low Water Graphics Enabled")
+			end
+		end
+	end)
+	coroutine.wrap(pcall)(function()
+		if _G.Settings["No Shadows"] or (_G.Settings.Other and _G.Settings.Other["No Shadows"]) then
+			Lighting.GlobalShadows = false
+			Lighting.FogEnd = 9e9
+			Lighting.ShadowSoftness = 0
+			if sethiddenproperty then
+				sethiddenproperty(Lighting, "Technology", 2)
+			else
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "Your exploit does not support sethiddenproperty, please use a different exploit.",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+				warn("Your exploit does not support sethiddenproperty, please use a different exploit.")
+			end
+			if _G.SendNotifications then
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "No Shadows Enabled",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+			end
+			if _G.ConsoleLogs then
+				warn("No Shadows Enabled")
+			end
+		end
+	end)
+	coroutine.wrap(pcall)(function()
+		if _G.Settings["Low Rendering"] or (_G.Settings.Other and _G.Settings.Other["Low Rendering"]) then
+			settings().Rendering.QualityLevel = 1
+			settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level04
+			if _G.SendNotifications then
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "Low Rendering Enabled",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+			end
+			if _G.ConsoleLogs then
+				warn("Low Rendering Enabled")
+			end
+		end
+	end)
+	coroutine.wrap(pcall)(function()
+		if _G.Settings["Reset Materials"] or (_G.Settings.Other and _G.Settings.Other["Reset Materials"]) then
+			for i, v in pairs(MaterialService:GetChildren()) do
+				v:Destroy()
+			end
+			MaterialService.Use2022Materials = false
+			if _G.SendNotifications then
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "Reset Materials Enabled",
+					Duration = 5,
+					Button1 = "Okay"
+				})
+			end
+			if _G.ConsoleLogs then
+				warn("Reset Materials Enabled")
+			end
+		end
+	end)
+	coroutine.wrap(pcall)(function()
+		if _G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"]) then
+			if setfpscap then
+				if type(_G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"])) == "string" or type(_G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"])) == "number" then
+					setfpscap(tonumber(_G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"])))
+					if _G.SendNotifications then
+						StarterGui:SetCore("SendNotification", {
+							Title = "discord.gg/rips",
+							Text = "FPS Capped to " .. tostring(_G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"])),
+							Duration = 5,
+							Button1 = "Okay"
+						})
+					end
+					if _G.ConsoleLogs then
+						warn("FPS Capped to " .. tostring(_G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"])))
+					end
+				elseif _G.Settings["FPS Cap"] or (_G.Settings.Other and _G.Settings.Other["FPS Cap"]) == true then
+					setfpscap(1e6)
+					if _G.SendNotifications then
+						StarterGui:SetCore("SendNotification", {
+							Title = "discord.gg/rips",
+							Text = "FPS Uncapped",
+							Duration = 5,
+							Button1 = "Okay"
+						})
+					end
+					if _G.ConsoleLogs then
+						warn("FPS Uncapped")
+					end
+				end
+			else
+				StarterGui:SetCore("SendNotification", {
+					Title = "discord.gg/rips",
+					Text = "FPS Cap Failed",
+					Duration = math.huge,
+					Button1 = "Okay"
+				})
+				warn("FPS Cap Failed")
+			end
+		end
+	end)
+	game.DescendantAdded:Connect(function(value)
+		wait(_G.LoadedWait or 1)
+		CheckIfBad(value)
+	end)
+	local Descendants = game:GetDescendants()
+	local StartNumber = _G.WaitPerAmount or 500
+	local WaitNumber = _G.WaitPerAmount or 500
+	if _G.SendNotifications then
+		StarterGui:SetCore("SendNotification", {
+			Title = "discord.gg/rips",
+			Text = "Checking " .. #Descendants .. " Instances...",
+			Duration = 15,
+			Button1 = "Okay"
+		})
+	end
+	if _G.ConsoleLogs then
+		warn("Checking " .. #Descendants .. " Instances...")
+	end
+	for i, v in pairs(Descendants) do
+		CheckIfBad(v)
+		if i == WaitNumber then
+			task.wait()
+			if _G.ConsoleLogs then
+				print("Loaded " .. i .. "/" .. #Descendants)
+			end
+			WaitNumber = WaitNumber + StartNumber
+		end
+	end
+end)
+
+questneeded = true
+SelectedMobs1 = ""
+getgenv().autostackloop = true
+getgenv().stackneeded = true
+-- main loop
+
+while true do
+	warn("in main loop")
+	success1, err1 = pcall(function()
+		task.wait()
+		deadcheck(false)
+		if getgenv().stackneeded == true then
+			deadcheck(false)
+			repeat
+				task.wait()
+				deadcheck(false)
+			until getgenv().dead == false
+			if getgenv().stackneeded == true then
+
+				stack1 = true
+				--autostack(stack1)
+				repeat
+					success, err = pcall(function()
+						targetted = game.Players.LocalPlayer.name
+						data = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId]
+						if stack1 == true and data.Energy.Value > 8000000 and getgenv().dead == false then
+							task.wait(1)
+
+							game.workspace.Living[targetted].UpperTorso:Destroy()
+							task.wait(5)
+							local Remote = game.ReplicatedStorage.Package.Events['equipskill']
+							local Arguments = {
+								[1] = "Godly SSJ2"
+							}
+							Remote:InvokeServer(unpack(Arguments))
+							local Remote = game.ReplicatedStorage.Package.Events['ta']
+							i = 0
+							repeat
+								Remote:InvokeServer(unpack(Arguments))
+								i = i + 1
+								task.wait(.1)
+							until i == 8
+							task.wait()
+							getgenv().stackneeded = false
+							transformStatus = true
+							autoFarmLoopRunning = true
+							flying = false
+
+						elseif stack1 == false then
+							getgenv().stackneeded = false
+							transformStatus = true
+							autoFarmLoopRunning = true
+							flying = false
+
+						elseif stack1 == true and data.Energy.Value < 8000000 then
+							task.wait()
+							getgenv().stackneeded = false
+							transformStatus = true
+							autoFarmLoopRunning = true
+							flying = false
+
+						end
+					end)
+					if success then
+						warn("(1)Stack loop Function executed successfully with a value of " .. tostring(getgenv().stackneeded))
+						-- Access the result returned by the function
+						getgenv().stackneeded = false
+					else
+						warn("Error occurred:", err)
+
+					end
+					task.wait()
+				until getgenv().stackneeded == false
+				deadcheck(true)
+				getgenv().stackneeded = false
+				questneeded = true
+				autoFarmLoopRunning = true
+			end
+
+		end
+		autoFarmLoopRunning = true
+		getgenv().stackneeded = false
+	end)
+	getgenv().stackneeded = false
+	if success1 then
+		warn("(2)Stack loop Function executed successfully with a value of " .. tostring(getgenv().stackneeded))
+		-- Access the result returned by the function
+
+	else
+		warn("Error occurred:", err1)
+
+	end
+
+	warn("line 1100 quest status = " .. tostring(questneeded))
+	warn("line 1100 enter loop status status = " .. tostring(autoFarmLoopRunning))
+	checkstackreq = getCheckValue()
+	if checkstackreq < 8000000 then
+		autoFarmLoopRunning = true
+	end
+
+	if getgenv().rebirthed == true and game.placeId == 5151400895 then
+		task.wait(10)
+		check1()
+		return
+
+	elseif getgenv().rebirthed == true and game.placeId ~= 5151400895 then
+		task.wait(3)
+		check1()
+	end
+
+	pcall(function()
+
+		game.Workspace.Living:WaitForChild(targetted)
+		game.Workspace.Living[targetted]:WaitForChild("HumanoidRootPart")
+
+	end)
+
+	if charge == false and getgenv().dead == false and autoFarmLoopRunning == true then
+
+		task.spawn(function()
+			while autoFarmLoopRunning do
+				pcall(function()
+					local args = {
+						[1] = "Blacknwhite27"
+					}
+
+					game:GetService("ReplicatedStorage").Package.Events.cha:InvokeServer(unpack(args))
+					task.wait()
+				end)
+			end
+		end)
+		task.spawn(function()
+			while autoFarmLoopRunning do
+				pcall(function()
+					data = game.ReplicatedStorage.Datas[game.Players.LocalPlayer.UserId]
+					local formtouse;
+
+					if transformStatus == true and game.Workspace.Living[targetted].Stats.Ki.Value > 300 and
+						game:GetService("ReplicatedStorage").Datas[game.Players.LocalPlayer.UserId].Quest.Value ~=
+						"X Fighter Trainer" then
+
+						local value = getCheckValue()
+						local alignment = data.Allignment.Value
+						local forms = FormsList[alignment]
+						local Paidforms = PaidFormsList[alignment]
+
+						local matchFound = false 
+						local paidmatchFound = false
+
+						for _, form in ipairs(Paidforms) do
+							if value >= form.reqvalue and value <= form.endrangevalue and form.reqvalue >=
+								data.Rebirth.Value and form.formOwned == true then
+
+								formtouse = form.name
+								paidmatchFound = true 
+								break 
+							end
+
+						end
+
+						if paidmatchFound == false then
+							for _, form in ipairs(forms) do
+								if value >= form.reqvalue and value <= form.endrangevalue and form.reqvalue >=
+									data.Rebirth.Value then
+									formtouse = form.name
+									matchFound = true 
+
+									break 
+								end
+							end
+						end
+
+						if not matchFound and not paidmatchFound then
+							for _, form in ipairs(forms) do
+								if form.rebirthReq >= data.Rebirth.Value then
+									formtouse = form.name
+									break
+								end
+							end
+
+						end
+						equipRemote = game:GetService("ReplicatedStorage").Package.Events.equipskill
+						equipRemote:InvokeServer(formtouse)
+						repeat
+							task.wait()
+							if game.Players.LocalPlayer.Status.SelectedTransformation.Value ~=
+								game.Players.LocalPlayer.Status.Transformation.Value then
+								game:GetService("ReplicatedStorage").Package.Events.ta:InvokeServer()
+							end
+						until game.Players.LocalPlayer.Status.SelectedTransformation.Value ==
+							game.Players.LocalPlayer.Status.Transformation.Value or
+							game.Workspace.Living[targetted].Stats.Ki.Value < 300
+					end
+
+				end)
+				task.wait(.5)
+			end
+		end)
+		charge = true
+	end
+
+	if flying == false and getgenv().dead == false and autoFarmLoopRunning == true then
+		success, err = pcall(function()
+
+			game.Workspace.Living:WaitForChild(targetted)
+			game.Workspace.Living[targetted]:WaitForChild("HumanoidRootPart")
+			local bv = game.Workspace.Living[targetted].HumanoidRootPart:WaitForChild("BodyVelocity")
+			local bg = game.Workspace.Living[targetted].HumanoidRootPart:WaitForChild("BodyGyro")
+
+
+			bg.P = 1
+			bg.MaxTorque = Vector3.new(500000, 500000, 500000)
+			bv.P = 1
+			bv.MaxForce = Vector3.new(100000, 100000, 100000)
+			flying = true
+		end)
+		if success then
+			warn("Fly Function executed successfully")
+			-- Access the result returned by the function
+
+		else
+			warn("Error occurred:", err)
+
+		end
+	end
+
+	if getgenv().dead == false and autoFarmLoopRunning == true then
+		warn("entered if for auto farm loop")
+		task.wait()
+
+
+		success, err = pcall(function()
+			while autoFarmLoopRunning do
+				task.wait()
+				check1()
+				local SelectedQuests, SelectedMobs, sameplanet;
+				success1, err1 = pcall(function()
+
+					while autoFarmLoopRunning do
+						if breakagain == true then
+							breakagain = false
+							break
+						end
+						if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+							for i, v in ipairs(game:GetService("Workspace").Living:GetChildren()) do
+								task.wait()
+								local q;
+								getgenv().switch1 = 1
+								q = getgenv().switch1
+								SelectedQuests, SelectedMobs, sameplanet = getQuest(q)
+
+								if v.Name:lower() == SelectedMobs:lower() then
+
+									local humanoid = v.Humanoid
+
+									if humanoid then
+										local currentState = humanoid:GetState()
+
+										if currentState == Enum.HumanoidStateType.Dead then
+											getgenv().switch1 = 2
+											q = getgenv().switch1
+											SelectedQuests, SelectedMobs, sameplanet = getQuest(q)
+
+										end
+									end
+									break
+								end
+							end
+						end
+
+						if string.len(game:GetService("ReplicatedStorage").Datas[game.Players.LocalPlayer.UserId]
+							.Quest.Value) <= 0 or questneeded == true then
+
+							SelectedMobs1 = SelectedMobs
+
+							checkValue = getCheckValue()
+							if checkValue >= 125000000 and game.placeId ~= 5151400895 then
+								SelectedQuests, SelectedMobs1 = "SSJG Kakata", "SSJG Kakata"
+								local A_1 = "Vills Planet"
+								local Event = game:GetService("ReplicatedStorage").Package.Events.TP
+								Event:InvokeServer(A_1)
+							end
+
+							if game:GetService("ReplicatedStorage").Datas[game.Players.LocalPlayer.UserId].Quest
+								.Value ~= SelectedQuests then 
+								game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService(
+									"Workspace").Others
+									.NPCs[SelectedQuests]
+									.HumanoidRootPart
+									.CFrame
+								repeat
+									task.wait()
+
+									game.ReplicatedStorage.Package.Events.Qaction:InvokeServer(game:GetService(
+										"Workspace").Others
+											.NPCs[SelectedQuests])
+								until game:GetService("ReplicatedStorage").Datas[game.Players.LocalPlayer.UserId]
+									.Quest.Value == SelectedQuests or
+									game.Players.LocalPlayer.Character.Humanoid.Health <= 0
+							end -- undefine
+
+						end
+
+						if game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+							for i, v in ipairs(game:GetService("Workspace").Living:GetChildren()) do
+								task.wait()
+
+								if v.Name:lower() == SelectedMobs1:lower() and game.Players.LocalPlayer.Character and
+									game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and
+									v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 or v.Name:lower() == "ssjg kakata" and SelectedMobs1:lower() == "ssjg kakata" then
+									task.wait()
+									if v.Name:lower() == "ssjg kakata" then
+										repeat
+											pcall(function()
+												if v.Humanoid.Health > 0 then
+													ssjgalive = true
+												end
+											end)
+											wait()
+										until ssjgalive == true
+									end
+
+									questneeded = false
+									game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart
+										.CFrame +
+										Vector3.new(0,
+											0, 0)
+
+
+									local Echar = v
+									task.spawn(function()
+										repeat
+
+											local myChar = game.Players.LocalPlayer.Character
+
+											myChar.HumanoidRootPart.CFrame =
+												Echar:GetPrimaryPartCFrame() * CFrame.new(0, 0, 2)
+
+											task.wait()
+										until not autoFarmLoopRunning or v.Humanoid.Health <= 0 or
+											game.Players.LocalPlayer.Character.Humanoid.Health <= 0
+									end)
+
+									task.wait(0.2)
+									local alignment = data.Allignment.Value
+									if alignment == "Evil" then
+										puntype = "Soul Punisher"
+									else
+										puntype = "Destruction"
+
+									end
+									repeat
+										task.wait()
+
+										if checkValue > 2100000 and game.Workspace.Living[targetted].Stats.Ki.Value >
+											10000 then -- op move stack 1
+
+											repeat
+
+
+												task.wait()
+												A_2 = "Blacknwhite27"
+												local spam = 0
+												repeat
+													task.spawn(function()
+
+
+
+														for _, A_1 in ipairs(attacks2) do
+															task.spawn(function()
+																task.wait()
+																game:GetService("ReplicatedStorage").Package.Events.mel:InvokeServer(
+																A_1, A_2)
+															end)
+
+
+														end
+														spam = spam + 1
+														wait(.1)
+													end) 
+												until spam == 10 or
+													game.Players.LocalPlayer.Character.Humanoid.Health <= 0
+
+
+
+
+
+												task.wait(0.3)
+											until not autoFarmLoopRunning or v.Humanoid.Health <= 0 or
+												game.Players.LocalPlayer.Character.Humanoid.Health <= 0 or
+												game.Workspace.Living[targetted].Stats.Ki.Value < 10000
+										else
+											task.spawn(function()
+												repeat
+													game:GetService("ReplicatedStorage").Package.Events.p:FireServer(
+													"Blacknwhite27", 1)
+													task.wait()
+												until not autoFarmLoopRunning or v.Humanoid.Health <= 0 or
+													game.Players.LocalPlayer.Character.Humanoid.Health <= 0 or
+													game.Workspace.Living[targetted].Stats.Ki.Value > 10000 and
+													checkValue > 2100000
+
+											end)
+
+											repeat
+												if game.Workspace.Living[targetted].Stats.Ki.Value > 400 then
+
+													task.wait()
+													local Event =
+														game:GetService("ReplicatedStorage").Package.Events.mel
+													local A_2 = "Blacknwhite27"
+													task.spawn(function()
+														local A_1 = "Mach Kick"
+														Event:InvokeServer(A_1, A_2)
+
+													end)
+													task.spawn(function()
+														A_1 = "Energy Volley"
+														A_2 = {
+															["FaceMouse"] = false,
+															["MouseHit"] = CFrame.new(15932.0273, -12.8115005,
+																15540.2061, 0.983303905, -0.0826973468, 0.162094966,
+																0, 0.89077127, 0.454452157, -0.181971505,
+																-0.446864575, 0.875898659)
+														}
+														A_3 = "Blacknwhite27"
+														Event =
+															game:GetService("ReplicatedStorage").Package.Events
+															.voleys
+														Event:InvokeServer(A_1, A_2, A_3)
+
+													end)
+													task.wait(.3)
+												else
+
+													game:GetService("ReplicatedStorage").Package.Events.p:FireServer(
+													"Blacknwhite27", 1)
+
+													task.wait()
+
+												end
+												task.wait()
+											until not autoFarmLoopRunning or v.Humanoid.Health <= 0 or
+												game.Players.LocalPlayer.Character.Humanoid.Health <= 0 or
+												game.Workspace.Living[targetted].Stats.Ki.Value > 10000 and
+												checkValue > 2100000
+
+										end
+										task.wait()
+									until not autoFarmLoopRunning or v.Humanoid.Health <= 0 or
+										game.Players.LocalPlayer.Character.Humanoid.Health <= 0
+
+									if game.Players.LocalPlayer.Character.Humanoid.Health <= 0 then
+										getgenv().stackneeded = true
+										getgenv().dead = true
+										autoFarmLoopRunning = false
+										flying = false
+										charge = false
+										questneeded = true
+
+									end
+									breakagain = true
+									break
+								end
+
+							end
+						else
+							questneeded = true
+						end
+						task.wait()
+					end
+				end)
+				if success1 then
+					warn("Function executed successfully")
+
+
+				else
+					warn("Error occurred:", err1)
+					questneeded = true
+				end
+			end
+
+		end)
+		if success then
+			warn("Function executed successfully")
+
+
+		else
+			warn("Error occurred:", err)
+			questneeded = true
+		end
+		task.wait()
+
+
+	end
+end
