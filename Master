@@ -1,1 +1,5 @@
+local Unfinished = true
 
+if unfinished then
+  return error("Script is not finished")
+end
